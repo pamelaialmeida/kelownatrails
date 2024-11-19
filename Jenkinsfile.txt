@@ -24,7 +24,7 @@ pipeline{
             script {
                 sh 'export TEST_URL=https://kelownatrails-test.web.app/' 
                 sh 'export ENV=test' 
-                sh 'npx mocha .\public\tests\kelownatrails-test.js'
+                sh 'npx mocha ./public/tests/kelownatrails-test.js'
             }
         }
     } 
@@ -37,7 +37,7 @@ pipeline{
             script {
                 sh 'export STAGING_URL=https://kelownatrails-staging-fef7c.web.app/' 
                 sh 'export ENV=staging' 
-                sh 'npx mocha .\public\tests\kelownatrails-test.js'
+                sh 'npx mocha ./public/tests/kelownatrails-test.js'
             }
         }
     } 
@@ -50,7 +50,7 @@ pipeline{
             script {
                 sh 'export PRODUCTION_URL=https://kelownatrails-prod.web.app/' 
                 sh 'export ENV=production' 
-                sh 'npx mocha .\public\tests\kelownatrails-test.js'
+                sh 'npx mocha ./public/tests/kelownatrails-test.js'
             }
         }
     } 
