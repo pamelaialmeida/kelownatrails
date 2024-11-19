@@ -1,4 +1,5 @@
 const { Builder, Browser, By, until } = require('selenium-webdriver');
+const chrome = require('selenium-webdriver/chrome');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 const { faker } = require('@faker-js/faker');
