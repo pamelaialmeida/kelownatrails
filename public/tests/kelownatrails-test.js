@@ -25,7 +25,7 @@ describe("Kelowna trails tests", function() {
     let driver;
 
     before(async function() {
-        driver = await new Builder().forBrowser("chrome").build();
+        driver = await new Builder().forBrowser("chrome").setChromeOptions(new chrome.Options().headless()).build();
     });
 
     beforeEach(async function () {
