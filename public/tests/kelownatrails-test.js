@@ -35,7 +35,7 @@ describe("Kelowna trails tests", function() {
     });
 
     beforeEach(async function () {
-      await driver.get(baseURL); 
+      await driver.get(baseUrl); 
       await driver.manage().window().maximize();
     });
 
