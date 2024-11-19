@@ -1,0 +1,43 @@
+pipeline{
+    agent any
+    environment {
+        FIREBASE_DEPLOY_TOKEN = credentials('firebase-token')
+        TEST_URL = 'http://test-url' 
+        STAGING_URL = 'http://staging-url' 
+        PRODUCTION_URL = 'http://production-url'
+    }
+
+ stages{
+    stage('Building'){
+        steps{
+           //sh 'npm install -g firebase-tools'
+                echo 'Biulding...'
+        }
+    } 
+    stage('Testing Environment'){
+        environment {
+            ENV = 'test'
+        }
+        steps{
+            sh 'firebase deploy -P kelownatrails-test --token "$FIREBASE_DEPLOY_TOKEN"'
+            script {
+                sh 'export TEST_URL=http://test-url' 
+                sh 'export ENV=test' 
+                sh 'npm install' 
+                sh 'npm test'
+            }
+        }
+    } 
+        stage('Staging Environment'){
+            steps{
+             sh 'firebase deploy -P devops-proj-staging --token "$FIREBASE_DEPLOY_TOKEN"'
+            }
+        } 
+        stage('Production Environment'){
+            steps{
+            sh 'firebase deploy -P devops-proj-production-bcfd9 --token "$FIREBASE_DEPLOY_TOKEN"'
+            }
+        } 
+    }
+
+}
