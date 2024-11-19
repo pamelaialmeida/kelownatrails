@@ -2,6 +2,7 @@ const { Builder, Browser, By, until } = require('selenium-webdriver');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 const { faker } = require('@faker-js/faker');
+const utils = require('./utils.js');
 
 describe("Kelowna trails tests", function() {
     let baseUrl; 
@@ -19,6 +20,7 @@ describe("Kelowna trails tests", function() {
             throw new Error('Invalid environment specified');
     }
     
+    this.timeout(10000);
 
     let driver;
 
@@ -27,7 +29,8 @@ describe("Kelowna trails tests", function() {
     });
 
     beforeEach(async function () {
-       await driver.get(baseURL); 
+      await driver.get(baseURL); 
+      await driver.manage().window().maximize();
     });
 
     it("Should not add Member when no data is provided", async function() {
@@ -78,6 +81,61 @@ describe("Kelowna trails tests", function() {
         let addedMember = `${lastName}, ${firstName}`;
 
         expect(optionTexts).to.include(addedMember, `The member "${addedMember}" is not added to the list of members.`);
+    });
+
+    it("Should display an error message when trying to delete a member when the list of members is empty", async function () {
+       await driver.findElement(By.id("deleteMemberBtn")).click();
+       let alert = await driver.wait(until.alertIsPresent());
+       let message = await alert.getText();
+       expect(message).to.be.equal("There are no members in the list.");
+       
+       await alert.accept();
+    });
+
+    it("Should display an error message when trying to delete a member without selecting any member on the list", async function () {
+        let lastName = faker.person.lastName();
+        let firstName = faker.person.firstName();
+
+        await utils.addAMember(driver, lastName, firstName, "15");
+
+        await driver.findElement(By.id("deleteMemberBtn")).click();
+        let alert = await driver.wait(until.alertIsPresent());
+        let message = await alert.getText();
+        expect(message).to.be.equal("Please, select a member to delete from the list.");
+        
+       await alert.accept();
+    })
+
+    it("Should delete the member from the list", async function () {
+        let lastName = faker.person.lastName();
+        let firstName = faker.person.firstName();
+
+        await utils.addAMember(driver, lastName, firstName, "10");
+
+        let listOfMembers = await driver.wait(until.elementLocated(By.id('members')), 10000); 
+        let nameToSelect = `${lastName}, ${firstName}`;
+        let memberToSelect = await listOfMembers.findElement(By.xpath(`//option[text()='${nameToSelect}']`));
+        await memberToSelect.click();
+
+        await driver.findElement(By.id("deleteMemberBtn")).click();
+        let alert = await driver.wait(until.alertIsPresent());
+        let message = await alert.getText();
+        expect(message).to.be.equal(`The member ${nameToSelect} was removed from the list.`);
+        
+        await alert.accept();
+
+        await driver.manage().setTimeouts({ implicit: 10000 });
+
+        let membersInList = await listOfMembers.getText();
+        expect(membersInList).to.not.include(nameToSelect, `The member "${nameToSelect}" should not be in the list of members.`);
+    })
+
+    after( async function() {
+        await driver.quit();
+    });
+
+    afterEach(function() {
+        driver.manage().deleteAllCookies();
     });
 
 });

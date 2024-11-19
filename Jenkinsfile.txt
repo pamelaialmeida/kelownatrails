@@ -2,16 +2,17 @@ pipeline{
     agent any
     environment {
         FIREBASE_DEPLOY_TOKEN = credentials('firebase-token')
-        TEST_URL = 'http://test-url' 
-        STAGING_URL = 'http://staging-url' 
-        PRODUCTION_URL = 'http://production-url'
+        TEST_URL = 'https://kelownatrails-test.web.app/' 
+        STAGING_URL = 'https://kelownatrails-staging-fef7c.web.app/' 
+        PRODUCTION_URL = 'https://kelownatrails-prod.web.app/'
     }
 
  stages{
     stage('Building'){
         steps{
-           //sh 'npm install -g firebase-tools'
-                echo 'Biulding...'
+            echo 'Biulding the environment'
+            //sh 'npm install -g firebase-tools'
+            sh 'npm install'
         }
     } 
     stage('Testing Environment'){
@@ -21,23 +22,38 @@ pipeline{
         steps{
             sh 'firebase deploy -P kelownatrails-test --token "$FIREBASE_DEPLOY_TOKEN"'
             script {
-                sh 'export TEST_URL=http://test-url' 
+                sh 'export TEST_URL=https://kelownatrails-test.web.app/' 
                 sh 'export ENV=test' 
-                sh 'npm install' 
-                sh 'npm test'
+                sh 'npx mocha .\public\tests\kelownatrails-test.js'
             }
         }
     } 
-        stage('Staging Environment'){
-            steps{
-             sh 'firebase deploy -P devops-proj-staging --token "$FIREBASE_DEPLOY_TOKEN"'
+    stage('Staging Environment'){
+        environment {
+            ENV = 'staging'
+        }
+        steps{
+            sh 'firebase deploy -P kelownatrails-staging-fef7c --token "$FIREBASE_DEPLOY_TOKEN"'
+            script {
+                sh 'export STAGING_URL=https://kelownatrails-staging-fef7c.web.app/' 
+                sh 'export ENV=staging' 
+                sh 'npx mocha .\public\tests\kelownatrails-test.js'
             }
-        } 
-        stage('Production Environment'){
-            steps{
-            sh 'firebase deploy -P devops-proj-production-bcfd9 --token "$FIREBASE_DEPLOY_TOKEN"'
+        }
+    } 
+    stage('Production Environment'){
+        environment {
+            ENV = 'production'
+        }       
+        steps{
+            sh 'firebase deploy -P kelownatrails-prod --token "$FIREBASE_DEPLOY_TOKEN"'
+            script {
+                sh 'export PRODUCTION_URL=https://kelownatrails-prod.web.app/' 
+                sh 'export ENV=production' 
+                sh 'npx mocha .\public\tests\kelownatrails-test.js'
             }
-        } 
-    }
+        }
+    } 
+ }
 
 }
